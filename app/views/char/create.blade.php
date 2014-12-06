@@ -3,6 +3,7 @@
 @section('content')
 
 <?php
+
 	function withDefault($val, $default) {
 		return intval($val) ? intval($val) : $default;
 	}
@@ -31,7 +32,7 @@
 	$r  = RUSH::races();
 	$s  = RUSH::specs();
 ?>
-	<form id="creation" action="{{action('CharController@postCreate')}}" method="post" />
+	<form id="creation" action="?" method="post" />
 		<input type=hidden name="step" value="{{$step + 1}}" />
 		
 		<div {{hide($name)}}>

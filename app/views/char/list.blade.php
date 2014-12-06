@@ -2,7 +2,8 @@
 
 @section('content')
 
-@foreach($chars->get() as $char)
+@if (count($c = $chars->get()))
+@foreach($c as $char)
 	<div class="charsel">
 		<p class="cstat">
 			{{$char->makeClickable()}}
@@ -12,6 +13,8 @@
 		<p>{{$char->specStr()}}<span class="del">[{{$char->makeClickable('delete', '{$delete}')}}]</span></p>
 	</div>
 @endforeach
-
+@else
+	<p>No chars</p>
+@endif
 <br />
 @stop

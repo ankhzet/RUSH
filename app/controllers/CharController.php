@@ -9,7 +9,7 @@
 			if (!$char)
 				return Redirect::to('char/select');
 
-			return $this->getSummary($char);
+			return $this->anySummary($char);
 		}
 
 		public function anySelect() {
@@ -23,37 +23,37 @@
 			return Redirect::to('/location');
 		}
 
-		public function getSummary(Char $char) {
+		public function anySummary(Char $char) {
 			self::dialog("char/pick/{$char->name}", 'char.pick');
-			self::dialog("char/exp/{$char->name}", 'char.exp');
-			self::dialog("char/relevel/{$char->name}", 'char.firstlevel');
 			return self::plain(CharRenderer::render($char));
 		}
 
-		public function getHome($r) {
+		public function anyHeartstone() {
 			$char = Char::get();
 			$h = $char->home;
 			$c = $char->cinematics;
 			$loc = $c ? $c : $char->location;
 			if ($h == $loc)
-				return '{$err_c2}';
+				return self::plain('{$err_c2}');
 			else {
 				if ($c) {
-					return '{$err_c3}';
+					return self::plain('{$err_c3}');
 				} else {
-					if ($_REQUEST['action'] != 'go') {
-						return '{$gohome}';
-						self::dialog('javascript:window.history.back()', 'back');
-						self::dialog('/char/home?action=go', 'next');
+					if (Input::get('action') != 'go') {
+						self::dialog('/char/heartstone?action=go', 'yes');
+						return self::plain('{$gohome}');
 					} else {
-						$s = intval($char->pget('sstime'));
-						$t = time();
-						if ($t - $s < Char::SS_COOLDOWN) {
-							echo '{$err_c1} ({$restoring} ' . maketime(Char::SS_COOLDOWN - ($t - $s)) . ')';
+						$spell = Spell::get(Spell::ID_HEARTSTONE);
+						var_dump($spell);
+
+						$cast = SpellCast::bind($spell);
+
+						$cooldown = $cast->cooldown($char)
+						if ($cooldown > 0) {
+							return self::plain('{$err_c1} ({$restoring} ' . maketime($cooldown) . ')');
 						} else {
-							$char->pset('sstime', $t);
-							$char->teleport($h);
-							RUSH::redirect('location');
+							$cast->castBy($char);
+							return Redirect::to('location');
 						}
 					}
 				}
@@ -92,13 +92,12 @@
 			return $view;
 		}
 
-		public function getDelete(Char $char) {
+		public function anyDelete(Char $char) {
 			if (Input::get('action') == 'delete') {
 				CharHelper::delete($char->id);
 				return Redirect::to('/char/select');
 			}
 
-			self::dialog('/char/select', 'back');
 			self::dialog("/char/delete/{$char->name}?action=delete", 'yes');
 
 			return self::plain('{$char.dodelete} [' . $char->makeClickable() . '] ?');

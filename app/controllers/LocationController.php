@@ -10,7 +10,8 @@
 				if (!$char)
 					return Redirect::to('char/select');
 					
-				$location = $char->location;
+				$locationId = $char->locatedAt();
+				$location = Location::get($locationId);
 			}
 			return View::make('location.show', ['location' => $location]);
 		}

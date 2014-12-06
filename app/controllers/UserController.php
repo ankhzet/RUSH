@@ -28,7 +28,7 @@ class UserController extends BaseController {
 		if ($validator->fails())
 			return Redirect::to('user/login')->withErrors($validator)->withInput(Input::all());
 		else {
-			if (Auth::attempt(Input::except('remember'), Input::has('remember')))
+			if (Auth::attempt(Input::only('email', 'password'), Input::has('remember')))
 				return Redirect::intended('/');
 
 			return Redirect::to("user/login")->withErrors((array('user' => 'failed to login')))->withInput(Input::all());
@@ -53,10 +53,11 @@ class UserController extends BaseController {
 			$user = new User(Input::except('password', 'password2', 'agreed'));
 			$user->password = Hash::make(Input::get('password'));
 
+			$user->save();
+
 			$user->roles()->attach(4);
 
-			$user->save();
-			return Redirect::to("user/{$user->id}");
+			return $this->postLogin();
 		}
 	}
 

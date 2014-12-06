@@ -6,9 +6,8 @@ Route::controller('home', 'HomeController');
 
 Route::controller('password', 'RemindersController');
 
-Route::controller('location', 'LocationController');
 
-
+require_once 'location_routing.php';
 require_once 'char_routing.php';
 
 

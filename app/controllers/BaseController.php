@@ -13,17 +13,22 @@ class BaseController extends Controller {
 		}
 	}
 
-	protected static function dialog($link, $title) {
+	protected static function dialog($link = false, $title = null) {
+		$dialog  = ($link !== false) ? View::shared('dialog', []) : [];
+
+		if (!$dialog)
+			$dialog = [['link' => 'javascript:window.history.back();', 'title' => 'back']];
+
 		if ($link) {
-			$dialog  = View::shared('dialog', []);
+			if (!$title) $title = $link;
 			$dialog[]= ['link' => $link, 'title' => $title];
-		} else 
-			$dialog = [];
-			
+		}
+
 		View::share('dialog', $dialog);
 	}
 
 	protected static function plain($contents) {
+		self::dialog(null);
 		return View::make('layouts.structure', ['content' => $contents]);
 	}
 }

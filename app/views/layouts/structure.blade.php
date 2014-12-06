@@ -13,7 +13,7 @@
 	$ingameMenu = array(
 //	, 'npc'         => array($n, 'npc')
 	  'location'    => array($c, 'location')
-	, 'char/home'    => array($c, 'heartstone')
+	, 'char/heartstone'    => array($c, 'heartstone')
 	, 'inventory'   => array($c, 'inventory')
 	);
 
