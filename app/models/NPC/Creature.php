@@ -1,6 +1,6 @@
 <?php
 
-	class Creature extends DataHolder {
+	class Creature extends DataHolder implements Killable {
 		protected $table = 'creatures';
 
 		const SPAWN_ALIVE  = 1;
@@ -10,7 +10,7 @@
 		const CORPSE_ALIVE = 30;
 		const CORPSE_RESPAWN = 60;
 
-		const DATA_LEVEL = 5;
+		const DATA_LEVEL = 10;
 		const SLAIN_EXPDENOM = 0.05; // 20 mobs to level =)
 
 		public function npc() {
