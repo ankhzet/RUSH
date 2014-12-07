@@ -43,18 +43,14 @@
 						self::dialog('/char/heartstone?action=go', 'yes');
 						return self::plain('{$gohome}');
 					} else {
-						$spell = Spell::get(Spell::ID_HEARTSTONE);
-						var_dump($spell);
+						$cast = SpellCast::bind(Spell::get(KnownSpells::HEARTSTONE));
 
-						$cast = SpellCast::bind($spell);
-
-						$cooldown = $cast->cooldown($char)
-						if ($cooldown > 0) {
-							return self::plain('{$err_c1} ({$restoring} ' . maketime($cooldown) . ')');
-						} else {
-							$cast->castBy($char);
+						$error = $cast->castBy($char);
+						if ($error != SpellCast::CAST_OK) {
+							$detail = ($error == SpellCast::CAST_COOLDOWN) ? ' ({$restoring} ' . maketime($cast->cooldown()) . ')' : '';
+							return self::plain("{\$err_s{$error}}$detail");
+						} else
 							return Redirect::to('location');
-						}
 					}
 				}
 			}

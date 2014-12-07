@@ -5,8 +5,6 @@
 
 		protected static $cache = [];
 
-		const ID_HEARTSTONE = 13;
-
 //	const TYPE_NEUTRAL  = 0x000000;
 		const TYPE_HOSTILE  = 0x000001;
 		const TYPE_FRIENDLY = 0x000002;

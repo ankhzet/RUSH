@@ -218,12 +218,6 @@
 			$this->save();
 		}
 
-		function teleport($location) {
-			$this->location_id = $location;
-			RUSH::oSet('npc', 0);
-			RUSH::oSet('quest', 0);
-		}
-
 		function resurrect() {
 			$this->cinematics_id = 0;
 			$this->recalcStats();
@@ -239,5 +233,11 @@
 
 		function fracRelation($fraction) {
 			return RUSH::fracRelation($fraction, $this->fraction);
+		}
+
+		function kill() {
+			$cementary = $this->location->cementaries();
+
+			$this->cinematics_id = $cementary->first()->id;
 		}
 	}

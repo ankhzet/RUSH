@@ -7,34 +7,33 @@
 		const CAST_NOTARGET = 3;
 		const CAST_UNKNOWN  = 4;
 
-		protected $spell = null;
 		protected $cooldown = null;
-		
+
+		public $spell = null;
 		public $hasCriticalEffect = false;
 		public $effect = 0;
 
-		public static function binded($spell) {
+		public static function bind($spell) {
 			$cast = new self;
 			$cast->spell = is_object($spell) ? $spell : Spell::get($spell);
 			return $cast;
 		}
 
 		protected static function casterId($caster) {
-			return is_a($caster, Char) ? $caster->id : -$caster->id;
+			return is_a($caster, 'Char') ? $caster->id : -$caster->id;
 		}
 
-		public function castedBy($caster) {
+		protected function castedBy($caster) {
 			return DB::table('spell_cast')
 				->where('spell_id', $this->spell->id)
 				->where('caster_id', self::casterId($caster))
-				->take(1)
-				->get();
+				->take(1);
 		}
 
-		public function cooldown($caster) {
-			if ($this->cooldown === null) {
-				if ($q = $this->castedBy($caster))
-					$this->cooldown = $this->spell->cooldown - ($q->casted_at - time()) / 1000;
+		public function cooldown($caster = null) {
+			if ($this->cooldown === null && $caster) {
+				if ($q = (($r = $this->castedBy($caster)->get()) ? $r[0] : null))
+					$this->cooldown = $this->spell->cooldown - (time() - $q->casted_at);
 				else
 					$this->cooldown = 0;
 			}
@@ -46,13 +45,13 @@
 			if ($this->cooldown($caster) > 0)
 				return self::CAST_COOLDOWN;
 
-			if (!($error = SpellCaster::cast($caster, $this->spell, $target)))
+			if (self::CAST_OK != ($error = SpellCaster::cast($this, $caster, $target)))
 				return $error;
 
 			$q = $this->castedBy($caster);
-			if ($q)
-				$q->casted_at = time();
-			else
+			if ($q->get()) {
+				$q->update(['casted_at' => time()]);
+			} else
 				DB::table('spell_cast')->insert(['caster_id' => self::casterId($caster), 'spell_id' => $this->spell->id, 'casted_at' => time()]);
 
 			return self::CAST_OK;

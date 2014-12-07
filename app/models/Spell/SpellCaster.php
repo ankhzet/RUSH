@@ -11,13 +11,24 @@
 		var $hasCriticalEffect = false;
 
 		public static function cast(SpellCast $spellcast, $caster, $target = null) {
-			$casted = (new self($caster, $spell, $target))->_cast();
-			return $casted;
+			return (new self($spellcast, $caster, $target))->_cast();
+		}
+
+		public function caster() {
+			return $this->caster;
+		}
+
+		public function target() {
+			return $this->target;
+		}
+
+		public function spellCast() {
+			return $this->spellcast;
 		}
 
 		protected function __construct(SpellCast $spellcast, $caster, $target = null) {
-			$this->caster = Caster::wrap($caster);
-			$this->target = $target ? Caster::wrap($target) : null;
+			$this->caster = CasterWrapper::wrap($caster);
+			$this->target = $target ? CasterWrapper::wrap($target) : null;
 			$this->spellcast = $spellcast;
 		}
 
@@ -47,18 +58,24 @@
 		}
 
 		protected function _cast() {
-			if (($cost = $this->manaCost()) && ($cost > $this->casterMana()))
+			$costsMana = $this->manaCost();
+			if ($costsMana && ($costsMana > $this->casterMana()))
 				return SpellCast::CAST_NOMANA;
 
 			$type = $this->spellcast->spell->type;
 			switch (true) {
 				case $type & Spell::TYPE_HOSTILE: 
-					return $this->hostileCast();
+					$type = 'hostileCast'; break;
 				case $type & Spell::TYPE_FRIENDLY: 
-					return $this->friendlyCast();
+					$type = 'friendlyCast'; break;
 				default: //  Spell::TYPE_NEUTRAL
-				  return $this->neutralCast();
+					$type = 'neutralCast';
 			}
+
+			if ((($casted = $this->{$type}()) == SpellCast::CAST_OK) && $costsMana)
+				$this->caster->modifyMana(-$costsMana);
+
+			return $casted;
 		}
 
 		// melee hit, magic hit, DoTs, defuffs, stun etc
@@ -114,6 +131,8 @@
 			return $spellcast->effect = $effect;
 		}
 
+
+
 		// damage can be run only on enemy
 		protected function damageCast() {
 			if (!$this->target)
@@ -121,7 +140,6 @@
 
 			$damage = $this->calculateEffect();
 
-			$this->caster->modifyMana(-$this->manaCost());
 			if (!$this->target->modifyHealth(-$damage))
 				$this->target->kill();
 
@@ -133,6 +151,7 @@
 				return SpellCast::CAST_NOTARGET;
 
 
+			return SpellCast::CAST_UNKNOWN;
 		}
 
 		protected function selfCast() {
@@ -145,7 +164,6 @@
 
 			$healed = $this->calculateEffect();
 
-			$this->caster->modifyMana(-$this->manaCost());
 			$this->target->modifyHealth($healed);
 
 			return SpellCast::CAST_OK;
@@ -154,94 +172,38 @@
 		protected function buffCast() {
 			$this->selfCast();
 
+			return SpellCast::CAST_UNKNOWN;
 		}
 
 		// dispells, teleports, items etc.
 		protected function neutralCast() {
-			$this->selfCast();
+			$spellId = $this->spellcast->spell->id;
 
+			$spell = null;
+			if ($spellId == KnownSpells::HEARTSTONE) 
+				$spell = new HeartstoneSpell;
+
+			return $spell ? $spell->cast($this) : SpellCast::CAST_UNKNOWN;
 		}
 
 	}
 
-	class Caster {
-		protected $caster;
-
-		static function wrap($target) {
-			$class = ucfirst(strtolower(get_class($target))) . 'Caster';
-			$caster = new {$class}();
-			$caster->caster = $target;
-			return $caster;
-		}
-
-		function kill() {
-			$this->caster->kill();
-		}
-
-		function damageAP(boolean $melee, &$attackPower, &$critChance) {
-			$ap = $melee ? RUSH::STAT_AP : RUSH::STAT_SPD;
-			$cr = $melee ? RUSH::STAT_MCRIT : RUSH::STAT_SCRIT;
-
-			$attackPower = $this->caster->statToRel($ap);
-			$critChance = $this->caster->statToRel($cr);
-		}
-
-
-		protected currentMana() {
-			return intval($this->caster->pget(DataHolder::DATA_MPCR));
-		}
-		protected totalMana() {
-			return intval($this->caster->pget(DataHolder::DATA_MPMX));
-		}
-		protected currentHealth() {
-			return intval($this->caster->pget(DataHolder::DATA_HPCR));
-		}
-		protected totalHealth() {
-			return intval($this->caster->pget(DataHolder::DATA_HPMX));
-		}
-		protected baseMana() {
-			return $this->totalMana();
-		}
-		protected baseHealth() {
-			return $this->totalHealth();
-		}
-
-		protected modifyHealth(int $delta) {
-			$health = $this->currentHealth() + $delta;
-			$health = min($this->totalHealth(), max(0, $health));
-			$this->caster->pset(DataHolder::DATA_HPCR, $health);
-
-			return $health;
-		}
-
-		protected modifyMana(int $delta) {
-			$mana = $this->currentMana() + $delta;
-			$mana = min($this->totalMana(), max(0, $mana));
-			$this->caster->pset(DataHolder::DATA_MPCR, $mana);
-
-			return $mana;
+	class KnownSpell {
+		function cast(SpellCaster $spellcaster) {
+			
 		}
 	}
 
+	class HeartstoneSpell {
+		function cast(SpellCaster $spellcaster) {
+			$char = $spellcaster->caster()->target();
+			if (!is_a($char, 'Char'))
+				return SpellCast::CAST_NOTARGET;
 
-	class CreatureCaster extends SpellCaster {
-	
-		function damageAP(boolean $melee, &$attackPower, &$critChance) {
-			$ap = $melee ? RUSH::STAT_AP : RUSH::STAT_SPD;
-			$cr = $melee ? RUSH::STAT_MCRIT : RUSH::STAT_SCRIT;
+			// var_dump([$char->location->title, $char->home->title, $spellcaster->spellCast()->cooldown()]);
+			CharHelper::teleport($char, $char->home);
 
-			$attackPower = intval($this->caster->pget($ap));
-			$critChance = intval($this->caster->pget($cr));
-		}
-
-	}
-
-	class CharCaster {
-		protected baseHealth() {
-			return $this->caster->statToRel(RUSH::STAT_STAM, true);
-		}
-		protected baseMana() {
-			return $this->caster->statToRel(RUSH::STAT_INT, true);
+			return SpellCast::CAST_OK;
 		}
 	}
 

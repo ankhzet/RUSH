@@ -1,6 +1,11 @@
 <?php
 
 	class CharHelper {
+		static function teleport(Char $char, Location $location) {
+			$char->location_id = $location->id;
+			$char->save();
+		}
+
 		static function create($userid, $data) {
 			$char = new Char(['name' => $data['name']]);
 			$char->user_id = $userid;
