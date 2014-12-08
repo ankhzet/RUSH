@@ -26,7 +26,9 @@
 			$t .= '<p>&nbsp;</p>';
 			$t .= '<p class="cstat">{$char.location}: <span>' . $char->location->makeClickable() . '</span></p>';
 			$t .= '<p class="cstat">{$char.home}: <span>' . $char->home->makeClickable() . '</span></p>';
-			$t .= '<p class="cstat">{$char.cinematics}: <span>' . $char->cinematics->makeClickable() . '</span></p>';
+
+			if ($char->cinematics)
+				$t .= '<p class="cstat">{$char.cinematics}: <span>' . $char->cinematics->makeClickable() . '</span></p>';
 
 			return $t;
 		}

@@ -16,16 +16,24 @@
 		}
 
 		protected function pickController() {
+			$controller = false;
 			if ($this->roles) {
-				foreach ($this->select as $selector) 
-					if (
-							is_callable($selector[1])
-							? $selector[1]($this->roles)
-							: array_intersect($this->roles, $selector[1])
-						) return $selector[0];
-			}
+				foreach ($this->select as $selector)  {
+					$pass = is_callable($filter = $selector[1]);
 
-			return false;
+					$callback = $pass ? $filter : $selector[2];
+
+					if ($pass)
+						$callback($this);
+					else
+						if ($pass = array_intersect($this->roles, $filter)) 
+							$callback($this);
+
+					if ($pass && !$controller)
+						$controller = $selector[0];
+				}
+			}
+			return $controller;
 		}
 
 		protected function pickAlias($route) {
@@ -69,8 +77,8 @@
 			return $router->bindRoutes($root);
 		}
 
-		public function role($controller, $callback) {
-			$this->select[] = [$controller, $callback];
+		public function role($controller, $callbackOrRoles, Closure $callback = null) {
+			$this->select[] = [$controller, $callbackOrRoles, $callback];
 		}
 
 		public function bind($entity, Closure $closure = null) {

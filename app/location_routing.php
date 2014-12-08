@@ -3,16 +3,17 @@
 require_once 'models/RoleDrivenRouter.php';
 
 if (!RoledRouter::route('/location', function (RoledRouter $r) {
-	// $r->role('CharAdminController', [1]);
-	$r->role('LocationController', [4, 1]);
+			$r->role('LocationController', [4], function (RoledRouter $r) {
+				// Basic functionality
 
-	// Instance filtering
-	$r->bind('location', function($value, $route) { return Location::where('title', $value)->first(); });
+				$r->any('render/{location}');
+				$r->any('render');
 
-	// Basic functionality
+				$r->any('{location}', 'index');
+				$r->any('', 'index');
+			});
 
-	$r->any('render/{location}');
-	$r->any('render');
-
-	$r->any('{location}', 'index');
-})) return;
+			// Instance filtering
+			$r->bind('location', function($value, $route) { return Location::where('title', $value)->first(); });
+		})
+	) return;
