@@ -237,7 +237,6 @@
 
 		function kill() {
 			$cementary = $this->location->cementaries();
-
-			$this->cinematics_id = $cementary->first()->id;
+			CharHelper::teleport($this, $cementary->first()->id);
 		}
 	}

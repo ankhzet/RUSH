@@ -187,23 +187,3 @@
 		}
 
 	}
-
-	class KnownSpell {
-		function cast(SpellCaster $spellcaster) {
-			
-		}
-	}
-
-	class HeartstoneSpell {
-		function cast(SpellCaster $spellcaster) {
-			$char = $spellcaster->caster()->target();
-			if (!is_a($char, 'Char'))
-				return SpellCast::CAST_NOTARGET;
-
-			// var_dump([$char->location->title, $char->home->title, $spellcaster->spellCast()->cooldown()]);
-			CharHelper::teleport($char, $char->home);
-
-			return SpellCast::CAST_OK;
-		}
-	}
-

@@ -1,8 +1,8 @@
 <?php
 
 	class CharHelper {
-		static function teleport(Char $char, Location $location) {
-			$char->location_id = $location->id;
+		static function teleport(Char $char, Location $location, $cinematics = false) {
+			$cinematics ? $char->cinematics_id = $location->id : $char->location_id = $location->id;
 			$char->save();
 		}
 
