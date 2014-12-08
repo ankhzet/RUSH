@@ -7,7 +7,7 @@
 		public function anyIndex() {
 			$char = Char::get();
 			if (!$char)
-				return Redirect::to('char/select');
+				return Redirect::to(Auth::check() ? 'char/select' : 'user/login');
 
 			return $this->anySummary($char);
 		}

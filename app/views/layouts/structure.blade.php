@@ -11,8 +11,8 @@
 	);
 
 	$ingameMenu = array(
-//	, 'npc'         => array($n, 'npc')
-	  'location'    => array($c, 'location')
+//  , 'npc'         => array($n, 'npc')
+		'location'    => array($c, 'location')
 	, 'char/heartstone'    => array($c, 'heartstone')
 	, 'inventory'   => array($c, 'inventory')
 	);
@@ -37,10 +37,10 @@
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
- 	  {{ HTML::style('/public/css/style.less', array('rel' => 'stylesheet/less')); }}
- 	  {{ HTML::script('/public/js/less.min.js'); }}
+		{{ HTML::style('/public/css/style.less', array('rel' => 'stylesheet/less')); }}
+		{{ HTML::script('/public/js/less.min.js'); }}
 
- 	  {{ HTML::script('jquery.js'); }}
+		{{ HTML::script('jquery.js'); }}
 
 		<title>Homepage - @lang('site')</title>
 		<meta name="keywords" content="" />
@@ -52,18 +52,20 @@
 
 		<ul class="menu">
 			{{join(' | ', makeMenu($globalMenu))}}
-			@if ($ingame = makeMenu($ingameMenu))
-			<ul class="in-game menu">
-				{{join(' | ', $ingame)}}
-			</ul>
-			@endif
+@if ($ingame = makeMenu($ingameMenu))
+			<li>
+				<ul class="in-game menu">
+					{{join(' | ', $ingame)}}
+				</ul>
+			</li>
+@endif
 		</ul>
 
 		<hr /> 
 
 		@if (isset($content)) {{$content}} @else
-		@yield('content')
-		@endif
+@yield('content')
+@endif
 
 		@include('layouts.dialogctl')
 		
