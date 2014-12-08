@@ -1,6 +1,6 @@
 <?php
 
-	class Creature extends DataHolder {
+	class Creature extends DataHolder implements Killable {
 		protected $table = 'creatures';
 
 		const SPAWN_ALIVE  = 1;
@@ -10,7 +10,7 @@
 		const CORPSE_ALIVE = 30;
 		const CORPSE_RESPAWN = 60;
 
-		const DATA_LEVEL = 5;
+		const DATA_LEVEL = 10;
 		const SLAIN_EXPDENOM = 0.05; // 20 mobs to level =)
 
 		public function npc() {
@@ -56,11 +56,10 @@
 			$health = intval($this->pget('curhp')) - $amount;
 			if ($health < 0) $health = 0;
 			$this->pset('curhp', $health);
-			if ($health <= 0) {
-				DB::table('spawns')
-					->where('spawned_id', $this->id)
-					->update(['state' => self::SPAWN_CORPSE, 'time' => time()]);
-			}
+
+			if ($health <= 0)
+				$this->kill();
+
 			return $health;
 		}
 
@@ -73,6 +72,12 @@
 
 		function slainExp() {
 			return ceil(Char::levelToExp($this->npc->level) * self::SLAIN_EXPDENOM);
+		}
+
+		function kill() {
+			DB::table('spawns')
+				->where('spawned_id', $this->id)
+				->update(['state' => self::SPAWN_CORPSE, 'time' => time()]);
 		}
 
 	}

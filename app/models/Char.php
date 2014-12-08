@@ -2,7 +2,7 @@
 
 	use Illuminate\Database\Eloquent\SoftDeletingTrait;
 
-	class Char extends DataHolder {
+	class Char extends DataHolder implements Killable {
 		use SoftDeletingTrait;
 
 		protected $table = 'chars';
@@ -12,13 +12,6 @@
 
 		var $attribs = 10;
 		var $istats = [];
-
-		var $relocs = array(
-			  'maxhp' => self::DATA_HPMX
-			, 'maxmp' => self::DATA_MPMX
-			, 'curhp' => self::DATA_HPCR
-			, 'curmp' => self::DATA_MPCR
-			);
 
 		static function get($id = null) {
 			if (!$id) $id = RUSH::oGet('char');
@@ -198,37 +191,31 @@
 		}
 
 		function recalcStats($max = true) {
-			$this->pset('maxhp', $hp = $this->statToRel(RUSH::STAT_STAM));
-			$this->pset('maxmp', $mp = $this->statToRel(RUSH::STAT_INT));
+			$this->pset(Char::DATA_HPMX, $hp = $this->statToRel(RUSH::STAT_STAM));
+			$this->pset(Char::DATA_MPMX, $mp = $this->statToRel(RUSH::STAT_INT));
 			if ($max) {
-				$this->pset('curhp', $hp);
-				$this->pset('curmp', $mp);
+				$this->pset(Char::DATA_HPCR, $hp);
+				$this->pset(Char::DATA_MPCR, $mp);
 			} else {
-				if (($h = $this->pget('curhp')) > $hp) $this->pset('curhp', $hp);
-				if (($m = $this->pget('curmp')) > $mp) $this->pset('curmp', $mp);
+				if (($h = $this->pget(Char::DATA_HPCR)) > $hp) $this->pset(Char::DATA_HPCR, $hp);
+				if (($m = $this->pget(Char::DATA_MPCR)) > $mp) $this->pset(Char::DATA_MPCR, $mp);
 			}
 		}
 
 		function gainMana($amount) {
-			$base = intval($this->pget('curmp'));
-			$max  = intval($this->pget('maxmp'));
-			$base += intval($amount);
-			$this->pset('curmp', $base < 0 ? 0 : ($base > $max ? $max : $base));
+			$base = intval($this->pget(Char::DATA_HPCR));
+			$max  = intval($this->pget(Char::DATA_MPMX));
+			$base+= intval($amount);
+			$this->pset(Char::DATA_MPCR, $base < 0 ? 0 : ($base > $max ? $max : $base));
 			$this->save();
 		}
 
 		function gainHealth($amount) {
-			$base = intval($this->pget('curhp'));
-			$max  = intval($this->pget('maxhp'));
-			$base += intval($amount);
-			$this->pset('curhp', $base < 0 ? 0 : ($base > $max ? $max : $base));
+			$base = intval($this->pget(Char::DATA_HPCR));
+			$max  = intval($this->pget(Char::DATA_HPMX));
+			$base+= intval($amount);
+			$this->pset(Char::DATA_HPCR, $base < 0 ? 0 : ($base > $max ? $max : $base));
 			$this->save();
-		}
-
-		function teleport($location) {
-			$this->location_id = $location;
-			RUSH::oSet('npc', 0);
-			RUSH::oSet('quest', 0);
 		}
 
 		function resurrect() {
@@ -246,5 +233,10 @@
 
 		function fracRelation($fraction) {
 			return RUSH::fracRelation($fraction, $this->fraction);
+		}
+
+		function kill() {
+			$cementary = $this->location->cementaries();
+			CharHelper::teleport($this, $cementary->first()->id);
 		}
 	}

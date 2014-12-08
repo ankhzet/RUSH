@@ -11,13 +11,6 @@
 		const DATA_HPCR = 3;
 		const DATA_MPCR = 4;
 
-		var $relocs = array(
-				'maxhp' => self::DATA_HPMX
-			, 'maxmp' => self::DATA_MPMX
-			, 'curhp' => self::DATA_HPCR
-			, 'curmp' => self::DATA_MPCR
-			);
-
 		public function getDataAttribute($data) {		
 			if ($this->_data)
 				return $this->_data;
@@ -34,8 +27,6 @@
 		}
 
 		function pset($attribute, $value) {
-			$attribute = $this->relocs[$attribute];
-			
 			if ($this->data[$attribute] != $value) {
 				$this->_data[$attribute] = $value;
 			  $this->attr_updated = true;
@@ -45,16 +36,12 @@
 		}
 
 		function pget($attribute) {
-			$attribute = $this->relocs[$attribute];
 			return $this->data[$attribute];
 		}
 
 		public function save(array $options = array()) {
-			if ($this->attr_updated) {
+			if ($this->attr_updated)
 				$this->data = $this->_data;
-			// var_dump($this);
-			// die();
-		}
 
 			parent::save($options);
 		}
