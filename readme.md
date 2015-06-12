@@ -1,27 +1,107 @@
-## Laravel PHP Framework
+## RUSH RPG
+============
 
-[![Build Status](https://travis-ci.org/laravel/framework.svg)](https://travis-ci.org/laravel/framework)
-[![Total Downloads](https://poser.pugx.org/laravel/framework/d/total.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Stable Version](https://poser.pugx.org/laravel/framework/v/stable.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Unstable Version](https://poser.pugx.org/laravel/framework/v/unstable.svg)](https://packagist.org/packages/laravel/framework)
-[![License](https://poser.pugx.org/laravel/framework/license.svg)](https://packagist.org/packages/laravel/framework)
+RUSH is opensorce RPG written in PHP and based on Laravel framework.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as authentication, routing, sessions, queueing, and caching.
+Installation
+----------------
 
-Laravel is accessible, yet powerful, providing powerful tools needed for large, robust applications. A superb inversion of control container, expressive migration system, and tightly integrated unit testing support give you the tools you need to build any application with which you are tasked.
+### Technical requirements
 
-## Official Documentation
+- Any webserver, that meets Laravel 5 requirements
 
-Documentation for the framework can be found on the [Laravel website](http://laravel.com/docs).
 
-## Contributing
+### Installation Instructions
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](http://laravel.com/docs/contributions).
+- Clone this repo
+- Pull app dependencies via composer:
+```bash
+machine:rush user$ cd rush/
+machine:rush user$ composer install
+machine:rush user$ chmod a+rw app/storage -R
+machine:rush user$ chmod a+rw bootstrap/cache -R
+```
+- Configure database (you can do that while dependencies are downloading):
+```bash
+machine:rush user$ sudo mysql
+mysql> CREATE USER 'rush'@'localhost' IDENTIFIED BY 'rush';
+mysql> SET PASSWORD FOR 'rush'@'localhost' = PASSWORD('secret')
+mysql> CREATE DATABASE rush_rpg_db;
+mysql> GRANT ALL PRIVILEGES ON rush_rpg_db . * TO 'rush'@'localhost';
+mysql> FLUSH PRIVILEGES;
+```
+Note: If yours database/user preferences differs, dont forget to make changes in `.env` file.
+- Create all required database tables and seed them with data with artisan:
+```bash
+machine:rush user$ php artisan migrate --seed
+```
+- Now you can open site in browser and login as `ankhzet@gmail.com`, password `password`
+Note: You can change database/seeds/UsersTableSeeder.php to seed database with yours credentials.
 
-## Security Vulnerabilities
+### Implementation progress
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+- [x] Users/Roles (partial)
+- [] Game core
+	- [] Creatures
+		- [] Creatures
+		- [] Players
+		- [] NPC's
+	- [] Fractions
+		- [] Fraction relations
+		- [] Reputation systems
+	- [] Items
+		- [] Item effects
+		- [] Usable Items (in conjunction with spellsystem)
+	- [] Inventory
+		- [] Bags
+	- [] Equipment
+		- [] Equipment summarized effects
+	- [] Quests
+		- [] Quest branches
+		- [] Quest nodes
+			- [] Quest node objectives
+		- [] Quest rewards
+			- [] Choosable quest rewards
+	- [] Locations
+		- [] Teleporting system
+		- [] Homebind system
+		- [] Cinematic locations
+	- [] Spellsystem
+		- [] Spell
+		- [] Spellcast
+		- [] Auras, DoT's, HoT's, chanelled spels
+	- [] Battlesystem
+		- [] Honor system
+		- [] Hostile/friendly tests
+		- [] Battle initiation/join/flee etc.
+		- [] Attack queue/chain/loop
+	- [] Loot tables
+- [] Socials?
+	- [] Party/Raid
+		- [] Group interface
+	- [] Chat
+- [] Helpsystem
+	- [] Tutorials system
+	- [] Ticketing
+- [] Game masters
+	- [] Tickets
+	- [] Bans/mutes
+- [] Game designers
+	- [] Editors interface
+		- [] Creature editors
+		- [] Location editors
+		- [] NPC editors
+		- [] Fraction editors
+		- [] Item editors
+			- [] Item effects editors
+		- [] Spell editors
+		- Quest editors
+		- Loot table editors
 
-### License
+More to come...
 
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
+### Change notes
+
+- Partial implementation on handmade framework
+- Ported to Laravel 4.2
+- Wiped, porting to Laravel 5
