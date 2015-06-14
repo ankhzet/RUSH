@@ -18,8 +18,8 @@ Installation
 ```bash
 machine:rush user$ cd rush/
 machine:rush user$ composer install
-machine:rush user$ chmod a+rw app/storage -R
-machine:rush user$ chmod a+rw bootstrap/cache -R
+machine:rush user$ chmod -R a+rw storage
+machine:rush user$ chmod -R a+rw bootstrap/cache
 ```
 - Configure database (you can do that while dependencies are downloading):
 ```bash
@@ -95,8 +95,8 @@ Note: You can change database/seeds/UsersTableSeeder.php to seed database with y
 		- [] Item editors
 			- [] Item effects editors
 		- [] Spell editors
-		- Quest editors
-		- Loot table editors
+		- [] Quest editors
+		- [] Loot table editors
 
 More to come...
 
